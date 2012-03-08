@@ -1,0 +1,8 @@
+To Do:
+
+- Find a 1-line style. cpanm, vcap
+  - curl -L http://bit.ly/stackato-vbox-microcloud | bash
+- psuedocode the install script
+- write the script in bash
+- test script
+  - recursively :)
