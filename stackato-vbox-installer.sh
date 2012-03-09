@@ -28,7 +28,40 @@ function verify() {
     fi
     # assert linux
     # assert debian
+    # assert working network device
+    # check if vbox installed
+    # verify vbox version
+    # check if stackato zip already downloaded
+    # check if stackato zip already unzipped
+}
+
+function success() {
+    echo
+    cat <<EOS
+Everything seems to have worked. You should now see a VirtualBox VM booting.
+Watch the console screen and wait for the boot to finish. It may take several
+minutes. When it is done the console screen should have a url like:
+
+    https://stackato-xxxx.local
+
+Load that url in a browser and continue your journey. Your next steps will be:
+
+  * Fill out the setup screen
+  * Go to the App Store tab
+  * Install some interesting Apps
+  * ♥ Stackato
+
+Enjoy!
+
+EOS
 }
 
 welcome
 verify
+
+# reset_sudo
+# install_vbox
+# download_stackato
+# unzip_stackato
+
+success
