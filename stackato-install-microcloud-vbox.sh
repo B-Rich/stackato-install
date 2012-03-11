@@ -65,8 +65,8 @@ function install_vbox() {
     if [ -z $VBOX ]; then
         echo
         echo "*** Installing VirtualBox from Debian package"
-        echo 'sudo apt-get virtualbox'
-        sudo apt-get virtualbox; catch
+        echo 'sudo apt-get install virtualbox'
+        sudo apt-get install virtualbox; catch
     else
         if [ -z $VBOXMANAGE ]; then
             echo "Error: VirtualBox installed but VBoxManage not installed"
