@@ -47,7 +47,8 @@ function verify() {
     want_cmd 'wget'
     want_cmd 'unzip'
 
-    NET_DEVICE=`ifconfig | perl -e '$/="";for(<>){print ${[split]}[0] && last if /inet addr:(\S+)/ and $1 !~ /^127/}'`
+    # Extract the active network device name from ifconfig
+    NET_DEVICE=`ifconfig | perl -e '$/="";for(<>){if (/inet addr:(\S+)/ and $1 !~ /^127/) { print ${[split]}[0]; last}}'`
     if [ -z $NET_DEVICE ]; then
         die "Error: No network device seems to be active."
     fi
@@ -102,11 +103,13 @@ function import_stackato_vm() {
 
     $VBOXMANAGE import $STACKATO_OVF_FILE; catch
 
+    # Extract the last VM name from the list. This seems to be the one that
+    # was just imported.
     VM_NAME=`VBoxManage list vms | perl -0e '$_=<>;s/.*\n"(.*?)".*/$1/s;print'`
     catch
 }
 
-function setup_network() {
+function config_network_device() {
     echo
     echo "*** Configure the Stackato VM"
 
@@ -161,6 +164,6 @@ install_vbox
 download_stackato
 unzip_stackato
 import_stackato_vm
-setup_network
+config_network_device
 start_stackato_vm
 success
