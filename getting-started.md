@@ -1,0 +1,3 @@
+## What to do with your new ActiveState Stackato Micro Cloud VM
+
+...
