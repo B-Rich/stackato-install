@@ -42,10 +42,11 @@ function verify() {
         die "Error: this installer only runs on Debian Linux currently"
     fi
 
-    want_cmd 'sudo'
     want_cmd 'perl'
-    want_cmd 'wget'
+    want_cmd 'sudo'
     want_cmd 'unzip'
+    want_cmd 'wget'
+    want_cmd 'yes'
 
     # Extract the active network device name from ifconfig
     NET_DEVICE=`ifconfig | perl -e '$/="";for(<>){if (/inet addr:(\S+)/ and $1 !~ /^127/) { print ${[split]}[0]; last}}'`
@@ -66,7 +67,7 @@ function install_vbox() {
         echo
         echo "*** Installing VirtualBox from Debian package"
         echo 'sudo apt-get install virtualbox'
-        sudo apt-get install virtualbox; catch
+        sudo apt-get install virtualbox < yes; catch
     else
         if [ -z $VBOXMANAGE ]; then
             echo "Error: VirtualBox installed but VBoxManage not installed"
