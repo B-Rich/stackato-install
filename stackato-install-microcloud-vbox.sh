@@ -126,7 +126,7 @@ function start_stackato_vm() {
     echo "*** Start the Stackato VM"
     echo "$VBOXMANAGE startvm $VM_NAME"
 
-    $VBOXMANAGE startvm $VM_NAME; catch
+    $VBOXMANAGE startvm $VM_NAME; # catch
 }
 
 function success() {
