@@ -1,11 +1,11 @@
 # ActiveState Stackato + VirtualBox install script
 
-VERSION=0.0.2
+VERSION=0.0.3
 RELEASE_DATE=2012-03-11
 
-STACKATO_URL=http://downloads.activestate.com/stackato/vm/v1.0.4/stackato-vm-vbox-v1.0.4.zip
-STACKATO_ZIP_FILE=stackato-vm-vbox-v1.0.4.zip
-STACKATO_OVF_FILE=Stackato-VM/Stackato-v1.0.4.ovf
+STACKATO_URL=http://downloads.activestate.com/stackato/vm/v1.0.6/stackato-vm-vbox-v1.0.6.zip
+STACKATO_ZIP_FILE=stackato-vm-vbox-v1.0.6.zip
+STACKATO_OVF_FILE=Stackato-VM/Stackato-v1.0.6.ovf
 STACKATO_LICENSE_FILE=StackatoMicroCloudLicenseAgreement.html
 
 function die {
