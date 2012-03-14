@@ -1,12 +1,22 @@
 # ActiveState Stackato + VirtualBox install script
 
-VERSION=0.0.4
-RELEASE_DATE=2012-03-13
+VERSION=0.0.5
+RELEASE_DATE=2012-03-14
+
+# Get OS type. Expect: linux or darwin or anything else
+OS=$OSTYPE
+# Remove version from darwin10.0
+OS=${OS/[0-9]*/}
+# Remove -gnu from linux-gnu
+OS=${OS/-*/}
 
 STACKATO_URL=http://downloads.activestate.com/stackato/vm/v1.0.6/stackato-vm-vbox-v1.0.6.zip
-STACKATO_ZIP_FILE=stackato-vm-vbox-v1.0.6.zip
+STACKATO_ZIP_FILE=${STACKATO_URL/*\//}
 STACKATO_OVF_FILE=Stackato-VM/Stackato-v1.0.6.ovf
 STACKATO_LICENSE_FILE=StackatoMicroCloudLicenseAgreement.html
+
+VIRTUALBOX_DMG_URL=http://download.virtualbox.org/virtualbox/4.1.10/VirtualBox-4.1.10-76795-OSX.dmg
+VIRTUALBOX_DMG_FILE=${VIRTUALBOX_DMG_URL/*\//}
 
 function die {
     echo $1
@@ -36,25 +46,36 @@ function verify() {
         exit 1
     fi
 
-    x=`type which`;catch
-    APTGET=`which apt-get`
-    if [ -z $APTGET ]; then
-        die "Error: this installer only runs on Debian Linux currently"
+    x=`type which`; catch
+    if [ $OS != 'linux' ] && [ $OS != 'darwin' ]; then
+        die "Error: this installer currently only runs on Debian Linux or OS X"
+    fi
+    if [ $OS == 'linux' ]; then
+        APTGET=`which apt-get`
+        if [ -z $APTGET ]; then
+            die "Error: this installer currently only runs on Debian-style for Linux"
+        fi
     fi
 
+    want_cmd 'bash'
+    want_cmd 'cat'
+    want_cmd 'curl'
+    want_cmd 'ifconfig'
     want_cmd 'perl'
+    want_cmd 'rm'
     want_cmd 'sudo'
     want_cmd 'unzip'
-    want_cmd 'wget'
+    want_cmd 'which'
+
+    if [ $OS == 'darwin' ]; then
+        want_cmd 'hdiutil'
+    fi
 
     # Extract the active network device name from ifconfig
     NET_DEVICE=`ifconfig | perl -e '$/="";for(<>){$d=${[split]}[0];if($d!~/^(lo|ppp0)/ and /inet addr:(\S+)/){print $d;last}}'`
     if [ -z $NET_DEVICE ]; then
         die "Error: No network device seems to be active."
     fi
-
-    VBOX=`which virtualbox`
-    VBOXMANAGE=`which VBoxManage`
 }
 
 function reset_sudo() {
@@ -62,17 +83,28 @@ function reset_sudo() {
 }
 
 function install_vbox() {
-    if [ -z $VBOX ]; then
+    VBOXMANAGE=`which VBoxManage`
+    if [ -z $VBOXMANAGE ]; then
         echo
         echo "*** Installing VirtualBox from Debian package"
-        echo 'sudo apt-get install virtualbox'
-        sudo apt-get install -y virtualbox; catch
+        case $OS in
+            linux)
+                echo 'sudo apt-get install virtualbox'
+                sudo apt-get install -y virtualbox; catch
+                ;;
+            darwin)
+                echo "curl -L $VIRTUALBOX_DMG_URL > $VIRTUALBOX_DMG_FILE"
+                curl -L $VIRTUALBOX_DMG_URL > $VIRTUALBOX_DMG_FILE; catch
+                echo "hdiutil mount $VIRTUALBOX_DMG_FILE"
+                hdiutil mount $VIRTUALBOX_DMG_FILE; catch
+                echo 'sudo installer -pkg /Volumes/VirtualBox.mpkg -target "/Volumes/Macintosh HD"'
+                sudo installer -pkg /Volumes/VirtualBox.mpkg -target "/Volumes/Macintosh HD"; catch
+                echo "hdiutil unmount /Volumes/VirtualBox"
+                hdiutil unmount /Volumes/VirtualBox; catch
+                ;;
+        esac
+
         VBOXMANAGE=`which VBoxManage`
-    else
-        if [ -z $VBOXMANAGE ]; then
-            echo "Error: VirtualBox installed but VBoxManage not installed"
-            exit 1
-        fi
     fi
 }
 
@@ -83,8 +115,8 @@ function download_stackato() {
     if [ ! -f $STACKATO_ZIP_FILE ]; then
         echo
         echo "*** Downloading Stackato-for-VirtualBox zip file"
-        echo "wget $STACKATO_URL"
-        wget $STACKATO_URL; catch
+        echo "curl -L $STACKATO_URL > $STACKATO_ZIP_FILE"
+        curl -L $STACKATO_URL > $STACKATO_ZIP_FILE; catch
     fi
 }
 
