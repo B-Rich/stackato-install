@@ -48,7 +48,7 @@ function verify() {
     want_cmd 'wget'
 
     # Extract the active network device name from ifconfig
-    NET_DEVICE=`ifconfig | perl -e '$/="";for(<>){if (/inet addr:(\S+)/ and $1 !~ /^127/) { print ${[split]}[0]; last}}'`
+    NET_DEVICE=`ifconfig | perl -e '$/="";for(<>){$d=${[split]}[0];if($d!~/^(lo|ppp0)/ and /inet addr+)/){print $d;last}}'`
     if [ -z $NET_DEVICE ]; then
         die "Error: No network device seems to be active."
     fi
