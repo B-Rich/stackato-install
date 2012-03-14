@@ -72,7 +72,7 @@ function verify() {
     fi
 
     # Extract the active network device name from ifconfig
-    NET_DEVICE=`ifconfig | perl -e '$/="";for(<>){$d=${[split]}[0];if($d!~/^(lo|ppp0)/ and /inet addr:(\S+)/){print $d;last}}'`
+    NET_DEVICE=`ifconfig | perl -e '$/="";for(<>){$d=${[split]}[0];if($d!~/^(lo|ppp0)/ and /inet (addr:)?(\S+)/){print $d;last}}'`
     if [ -z $NET_DEVICE ]; then
         die "Error: No network device seems to be active."
     fi
