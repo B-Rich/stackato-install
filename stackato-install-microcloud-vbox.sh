@@ -106,7 +106,7 @@ function import_stackato_vm() {
 
     # Extract the last VM name from the list. This seems to be the one that
     # was just imported.
-    VM_NAME=`VBoxManage list vms | perl -0e '$_=<>;s/.*\n"(.*?)".*/$1/s;print'`
+    VM_NAME=`VBoxManage list vms | perl -0e '$_=<>;s/(?:.*\n)?"(.*?)".*/$1/s;print'`
     catch
 }
 
