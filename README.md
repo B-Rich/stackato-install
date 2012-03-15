@@ -6,14 +6,27 @@ simple command:
 
     curl -L http://bit.ly/stackato-microcloud | bash
 
+NOTE: This script currently only works on Debian Linux and Max OS X host
+systems.  Other systems may be supported in the future.
+
+## How it Works
+
 This command fetches a Bash shell script from GitHub and runs it. The command
-will make you type your sudo password, so you are advised to review this
+may make you type your sudo password, so you are advised to review this
 script before running it.
 
-## Limitations
+The script is just automating these fairly simple steps:
 
-This script currently only works on Debian Linux host systems. Other systems
-may be supported in the future.
+* Download and Install Virtualbox (if not already installed)
+  * Requires `sudo` if installation required
+  * Uses `sudo apt-get install` on Debian systems
+* Download the Stackato VM zipfile (if not already downloaded)
+* Unzip the Stackato VM (if not already unzipped)
+* Import the Stackato VM image into VirtualBox
+* Configure the VM to use bridged networking on you active network device
+* Set the VM to use an appropriate amount of RAM on your system
+* Start the newly installed/configured VM
+* Print a message of what to do next, and where to find more doc
 
 ## About the Stackato Micro Cloud
 

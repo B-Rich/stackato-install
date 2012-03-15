@@ -7,11 +7,18 @@
 #
 ###
 
-VERSION=0.1.1
+###
+#
+# Static variables:
+#
+###
+
+VERSION=0.1.2
 RELEASE_DATE=2012-03-15
 
-# Get OS type. Expect: linux or darwin or anything else
+# Get OS type. Expect: linux or darwin or something else
 OS=$OSTYPE
+if [ -z "$OS" ]; then OS="unknown"; fi
 # Remove version from darwin10.0
 OS=${OS/[0-9]*/}
 # Remove -gnu from linux-gnu
@@ -25,29 +32,37 @@ STACKATO_LICENSE_FILE=StackatoMicroCloudLicenseAgreement.html
 VIRTUALBOX_DMG_URL=http://download.virtualbox.org/virtualbox/4.1.10/VirtualBox-4.1.10-76795-OSX.dmg
 VIRTUALBOX_DMG_FILE=${VIRTUALBOX_DMG_URL/*\//}
 
-function die {
-    echo $1
-    exit 1
-}
-
-function catch() {
-    if [ $? -ne 0 ]; then
-        die "Error: command failed"
-    fi
-}
-
-function need_cmd() {
-    CMD=$1
-    bin=`which $CMD`
-    if [ -z $bin ]; then die "Error: '$CMD' command required"; fi
-}
+###
+#
+# Define all the steps to perform in separate functions, then call them
+# at the bottom of the script.
+#
+###
 
 function welcome() {
-    echo
-    echo "*** This is stackato-vbox-installer - version $VERSION - $RELEASE_DATE"
+    cat <<EOS
+
+*** This is stackato-vbox-installer - version $VERSION - $RELEASE_DATE
+
+EOS
+
+    verify_os
+
+    cat <<EOS
+You will be asked for your password if VirtualBox needs to be installed.
+
+Press <CTL>-c to quit now.
+
+Full details available here:
+
+    https://github.com/ActiveState/stackato-install#readme
+
+EOS
+
+    prompt "Press <CTL>-c to exit or press <ENTER> to continue..."
 }
 
-function verify() {
+function verify_os() {
     if [ -z $BASH_VERSION ]; then
         echo "Error: this installer needs to be run by bash"
         exit 1
@@ -63,7 +78,9 @@ function verify() {
             die "Error: this installer currently only runs on Debian-style for Linux"
         fi
     fi
+}
 
+function verify_system() {
     need_cmd 'bash'
     need_cmd 'cat'
     need_cmd 'curl'
@@ -90,41 +107,40 @@ function verify() {
 
     # Get memory requirement and make sure host has it
     get_mem_size
-    if [ -z $STACKATO_FORCE_INSTALL ]; then
-        if [[ $MEM_REQUIRED_MB -gt $MEM_FREE_MB ]]; then
-            echo
-            echo "${MEM_REQUIRED_MB}MB free memory required, ${MEM_FREE_MB}MB available."
-            echo "If you really want to run this, set the STACKATO_INSTALL_FORCE env var"
-            echo "to a true value and run again."
-            echo
-            echo "Exiting..."
-            echo
-            exit 1
-        fi
-    fi
-}
+    if [[ $MEM_REQUIRED_MB -gt $MEM_FREE_MB ]]; then
+        cat <<EOS
 
-function reset_sudo() {
-    sudo -k; catch
+*** WARNING WARNING WARNING
+
+${MEM_REQUIRED_MB}MB free memory required, ${MEM_FREE_MB}MB available."
+
+Starting Stackato in this state may cause your host to run out of memory
+and become unresponsive. :-(
+
+EOS
+        prompt "Press <CTL>-c to exit or press <ENTER> to continue..."
+    fi
 }
 
 function install_vbox() {
     VBOXMANAGE=`which VBoxManage`
     if [ -z $VBOXMANAGE ]; then
+        sudo -k; catch
         echo
-        echo "*** Installing VirtualBox from Debian package"
         case $OS in
             linux)
+                echo "*** Installing VirtualBox from Debian package"
                 echo 'sudo apt-get install virtualbox'
                 sudo apt-get install -y virtualbox; catch
                 ;;
             darwin)
+                echo "*** Installing VirtualBox from virtualbox.org"
                 echo "curl -L $VIRTUALBOX_DMG_URL > $VIRTUALBOX_DMG_FILE"
                 curl -L $VIRTUALBOX_DMG_URL > $VIRTUALBOX_DMG_FILE; catch
                 echo "hdiutil mount $VIRTUALBOX_DMG_FILE"
                 hdiutil mount $VIRTUALBOX_DMG_FILE; catch
-                echo 'sudo installer -pkg /Volumes/VirtualBox.mpkg -target "/Volumes/Macintosh HD"'
-                sudo installer -pkg /Volumes/VirtualBox.mpkg -target "/Volumes/Macintosh HD"; catch
+                echo 'sudo installer -pkg /Volumes/VirtualBox.mpkg -target /'
+                sudo installer -pkg /Volumes/VirtualBox.mpkg -target /; catch
                 echo "hdiutil unmount /Volumes/VirtualBox"
                 hdiutil unmount /Volumes/VirtualBox; catch
                 ;;
@@ -219,6 +235,39 @@ PS For more help getting started, look here:
 EOS
 }
 
+###
+#
+# Helper functions
+#
+###
+
+function die {
+    echo $1
+    exit 1
+}
+
+function catch() {
+    if [ $? -ne 0 ]; then
+        die "Error: command failed"
+    fi
+}
+
+function need_cmd() {
+    CMD=$1
+    bin=`which $CMD`
+    if [ -z $bin ]; then die "Error: '$CMD' command required"; fi
+}
+
+function prompt() {
+    # Open a file descriptor to terminal
+    exec 5<> /dev/tty
+    echo -n $1
+    read <&5
+    # Close the file descriptor
+    exec 5>&-
+}
+
+# Check free mem on host and guess a number to use between 1-2GB
 function get_mem_size() {
     case $OS in
         linux)
@@ -238,9 +287,14 @@ function get_mem_size() {
     fi
 }
 
+###
+#
+# These are the calls to the high level functions performed by this script:
+#
+###
+
 welcome
-verify
-reset_sudo
+verify_system
 install_vbox
 download_stackato
 unzip_stackato
