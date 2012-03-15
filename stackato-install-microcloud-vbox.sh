@@ -1,7 +1,14 @@
 # ActiveState Stackato + VirtualBox install script
 
-VERSION=0.1.0
-RELEASE_DATE=2012-03-14
+### WARNING WARNING WARNING WARNING WARNING
+#
+# This script uses sudo (to install VirtualBox if needed)
+# You should read through this script before running it.
+#
+###
+
+VERSION=0.1.1
+RELEASE_DATE=2012-03-15
 
 # Get OS type. Expect: linux or darwin or anything else
 OS=$OSTYPE
@@ -29,7 +36,7 @@ function catch() {
     fi
 }
 
-function want_cmd() {
+function need_cmd() {
     CMD=$1
     bin=`which $CMD`
     if [ -z $bin ]; then die "Error: '$CMD' command required"; fi
@@ -57,19 +64,22 @@ function verify() {
         fi
     fi
 
-    want_cmd 'bash'
-    want_cmd 'cat'
-    want_cmd 'curl'
-    want_cmd 'ifconfig'
-    want_cmd 'perl'
-    want_cmd 'rm'
-    want_cmd 'sudo'
-    want_cmd 'unzip'
-    want_cmd 'which'
+    need_cmd 'bash'
+    need_cmd 'cat'
+    need_cmd 'curl'
+    need_cmd 'ifconfig'
+    need_cmd 'perl'
+    need_cmd 'rm'
+    need_cmd 'sudo'
+    need_cmd 'unzip'
+    need_cmd 'which'
 
     if [ $OS == 'darwin' ]; then
-        want_cmd 'hdiutil'
-        want_cmd 'installer'
+        need_cmd 'hdiutil'
+        need_cmd 'installer'
+        need_cmd 'vm_stat'
+    else
+        need_cmd 'free'
     fi
 
     # Extract the active network device name from ifconfig
@@ -181,8 +191,8 @@ function start_stackato_vm() {
 }
 
 function success() {
-    echo
     cat <<EOS
+
 Everything seems to have worked. You should now see a VirtualBox VM booting.
 Watch the console screen and wait for the boot to finish. It may take several
 minutes. When it is done the console screen should have a url like:
