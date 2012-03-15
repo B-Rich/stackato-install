@@ -1,6 +1,6 @@
 # ActiveState Stackato + VirtualBox install script
 
-VERSION=0.0.5
+VERSION=0.1.0
 RELEASE_DATE=2012-03-14
 
 # Get OS type. Expect: linux or darwin or anything else
@@ -80,8 +80,17 @@ function verify() {
 
     # Get memory requirement and make sure host has it
     get_mem_size
-    if [[ $MEM_REQUIRED_MB -gt $MEM_FREE_MB ]]; then
-        die "${MEM_REQUIRED_MB}MB free memory required, ${MEM_FREE_MB}MB available. Exiting."
+    if [ -z $STACKATO_FORCE_INSTALL ]; then
+        if [[ $MEM_REQUIRED_MB -gt $MEM_FREE_MB ]]; then
+            echo
+            echo "${MEM_REQUIRED_MB}MB free memory required, ${MEM_FREE_MB}MB available."
+            echo "If you really want to run this, set the STACKATO_INSTALL_FORCE env var"
+            echo "to a true value and run again."
+            echo
+            echo "Exiting..."
+            echo
+            exit 1
+        fi
     fi
 }
 
