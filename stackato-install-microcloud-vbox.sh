@@ -77,6 +77,12 @@ function verify() {
     if [ -z $NET_DEVICE ]; then
         die "Error: No network device seems to be active."
     fi
+
+    # Get memory requirement and make sure host has it
+    get_mem_size
+    if [[ $MEM_REQUIRED_MB -gt $MEM_FREE_MB ]]; then
+        die "${MEM_REQUIRED_MB}MB free memory required, ${MEM_FREE_MB}MB available. Exiting."
+    fi
 }
 
 function reset_sudo() {
@@ -143,7 +149,7 @@ function import_stackato_vm() {
     catch
 }
 
-function config_network_device() {
+function configure_stackato_vm() {
     echo
     echo "*** Configure the Stackato VM"
 
@@ -152,6 +158,9 @@ function config_network_device() {
 
     echo "$VBOXMANAGE modifyvm $VM_NAME --bridgeadapter1 $NET_DEVICE"
     $VBOXMANAGE modifyvm $VM_NAME --bridgeadapter1 $NET_DEVICE; catch
+
+    echo "$VBOXMANAGE modifyvm $VM_NAME --memory $MEM_REQUIRED_MB"
+    $VBOXMANAGE modifyvm $VM_NAME --memory $MEM_REQUIRED_MB; catch
 }
 
 function start_stackato_vm() {
@@ -191,6 +200,25 @@ PS For more help getting started, look here:
 EOS
 }
 
+function get_mem_size() {
+    case $OS in
+        linux)
+            MEM_FREE_MB=`free -m | perl -0e '($t=<>)=~s/.*?buffers\/cache:\s+\S+\s+(\S+).*/$1/s;print$1'`
+            ;;
+        darwin)
+            MEM_FREE_MB=`vm_stat | perl -0e '($t=<>)=~/(\d+)\s+bytes.*Pages free:\s+(\d+).*Pages active:\s+(\d+)/s or die; print($1*($2+$3)/1024)'`
+            ;;
+    esac
+    MEM_FREE_MB=$((MEM_FREE_MB/10*8))
+    if [[ $MEM_FREE_MB -gt 2048 ]]; then
+        MEM_REQUIRED_MB=2048
+    elif [[ $MEM_FREE_MB -lt 1024 ]]; then
+        MEM_REQUIRED_MB=1024
+    else
+        MEM_REQUIRED_MB=$MEM_FREE_MB
+    fi
+}
+
 welcome
 verify
 reset_sudo
@@ -198,6 +226,6 @@ install_vbox
 download_stackato
 unzip_stackato
 import_stackato_vm
-config_network_device
+configure_stackato_vm
 start_stackato_vm
 success
