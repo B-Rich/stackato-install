@@ -139,8 +139,8 @@ function install_vbox() {
                 curl -L $VIRTUALBOX_DMG_URL > $VIRTUALBOX_DMG_FILE; catch
                 echo "hdiutil mount $VIRTUALBOX_DMG_FILE"
                 hdiutil mount $VIRTUALBOX_DMG_FILE; catch
-                echo 'sudo installer -pkg /Volumes/VirtualBox.mpkg -target /'
-                sudo installer -pkg /Volumes/VirtualBox.mpkg -target /; catch
+                echo 'sudo installer -pkg /Volumes/VirtualBox/VirtualBox.mpkg -target /Applications/'
+                sudo installer -pkg /Volumes/VirtualBox/VirtualBox.mpkg -target /Applications/; catch
                 echo "hdiutil unmount /Volumes/VirtualBox"
                 hdiutil unmount /Volumes/VirtualBox; catch
                 ;;
