@@ -49,9 +49,19 @@ EOS
     verify_os
 
     cat <<EOS
-You will be asked for your password if VirtualBox needs to be installed.
 
-Press <CTL>-c to quit now.
+This script will automate the following things for you:
+
+    * Download and Install Virtualbox (if not already installed)
+    * Download the Stackato VM zipfile (if not already downloaded)
+    * Unzip the Stackato VM (if not already unzipped)
+    * Import the Stackato VM image into VirtualBox
+    * Configure the VM to use bridged networking on you active network device
+    * Set the VM to use an appropriate amount of RAM on your system
+    * Start the newly installed/configured VM
+    * Print a message of what to do next, and where to find more doc
+
+You will be asked for your password if VirtualBox needs to be installed.
 
 Full details available here:
 
@@ -131,21 +141,24 @@ function check_for_other_hypervisors() {
         if [ $RUNNING != '0' ]; then
             cat <<EOS
 
-WARNING: You appear to be running a VMware hypervisor program. This script
-wants to run VirtualBox. Running these two programs together has been known to
-cause a system crash in some cases. You may wish to cancel this script and
-stop your other VM software. Then you can run this script again.
+*** WARNING WARNING WARNING
+
+You appear to be running a VMware hypervisor program. This script wants to run
+VirtualBox. Running these two programs together has been known to cause a
+system crash in some cases. You may wish to cancel this script and stop your
+other VM software. Then you can run this script again.
 
 EOS
             prompt
         elif [ $INSTALLED != '0' ]; then
             cat <<EOS
 
-WARNING: You appear to have a VMware product installed (but not running).
-Note that this script is trying to start a VirtualBox VM. These two programs
-are known to sometimes cause a system crash when run together. Be sure to not
-run VMware, whilst running VirtualBox (unless you really know what you are
-doing).
+*** WARNING WARNING WARNING
+
+You appear to have a VMware product installed (but not running).  Note that
+this script is trying to start a VirtualBox VM. These two programs are known
+to sometimes cause a system crash when run together. Be sure to not run
+VMware, whilst running VirtualBox (unless you really know what you are doing).
 
 EOS
             prompt
