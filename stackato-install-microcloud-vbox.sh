@@ -140,7 +140,7 @@ function install_vbox() {
                 echo "hdiutil mount $VIRTUALBOX_DMG_FILE"
                 hdiutil mount $VIRTUALBOX_DMG_FILE; catch
                 echo 'sudo installer -pkg /Volumes/VirtualBox/VirtualBox.mpkg -target /Applications/'
-                sudo installer -pkg /Volumes/VirtualBox/VirtualBox.mpkg -target /Applications/; catch
+                sudo installer -pkg /Volumes/VirtualBox/VirtualBox.mpkg -target /; catch
                 echo "hdiutil unmount /Volumes/VirtualBox"
                 hdiutil unmount /Volumes/VirtualBox; catch
                 ;;
