@@ -59,7 +59,7 @@ Full details available here:
 
 EOS
 
-    prompt "Press <CTL>-c to exit or press <ENTER> to continue..."
+    prompt
 }
 
 function verify_os() {
@@ -92,9 +92,11 @@ function verify_system() {
     need_cmd 'which'
 
     if [ $OS == 'darwin' ]; then
+        need_cmd 'grep'
         need_cmd 'hdiutil'
         need_cmd 'installer'
         need_cmd 'vm_stat'
+        need_cmd 'wc'
     else
         need_cmd 'free'
     fi
@@ -118,7 +120,36 @@ Starting Stackato in this state may cause your host to run out of memory
 and become unresponsive. :-(
 
 EOS
-        prompt "Press <CTL>-c to exit or press <ENTER> to continue..."
+        prompt
+    fi
+}
+
+function check_for_other_hypervisors() {
+    if [ $OS == "darwin" ]; then
+        INSTALLED=`ls -l /Applications/ | grep -i vmware | wc -l`
+        RUNNING=`ps -eaf | grep -i vmware | grep app | wc -l`
+        if [ $RUNNING != '0' ]; then
+            cat <<EOS
+
+WARNING: You appear to be running a VMware hypervisor program. This script
+wants to run VirtualBox. Running these two programs together has been known to
+cause system crash in some cases. You may wish to cancel this script and stop
+your other VM software. Then you can run this script again.
+
+EOS
+            prompt
+        elif [ $INSTALLED != '0' ]; then
+            cat <<EOS
+
+WARNING: You appear to have a VMware product installed (but not running).
+Note that this script is trying to start a VirtualBox VM. These two programs
+are known to sometimes cause a system crash when run together. Be sure to not
+run VMware, whilst running VirtualBox (unless you really know what you are
+doing).
+
+EOS
+            prompt
+        fi
     fi
 }
 
@@ -261,7 +292,7 @@ function need_cmd() {
 function prompt() {
     # Open a file descriptor to terminal
     exec 5<> /dev/tty
-    echo -n $1
+    echo -n "Press <CTL>-c to exit or press <ENTER> to continue..."
     read <&5
     # Close the file descriptor
     exec 5>&-
@@ -295,6 +326,7 @@ function get_mem_size() {
 
 welcome
 verify_system
+check_for_other_hypervisors
 install_vbox
 download_stackato
 unzip_stackato
