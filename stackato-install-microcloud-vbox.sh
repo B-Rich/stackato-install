@@ -133,8 +133,8 @@ function check_for_other_hypervisors() {
 
 WARNING: You appear to be running a VMware hypervisor program. This script
 wants to run VirtualBox. Running these two programs together has been known to
-cause system crash in some cases. You may wish to cancel this script and stop
-your other VM software. Then you can run this script again.
+cause a system crash in some cases. You may wish to cancel this script and
+stop your other VM software. Then you can run this script again.
 
 EOS
             prompt
