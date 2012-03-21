@@ -7,14 +7,24 @@
 #
 ###
 
+if [ -z "$BASH" ]; then
+    if [ ! -z "$-" ]; then
+        opts="-$-"
+    fi
+    exec /usr/bin/env bash $opts "$0" "$@"
+    echo "Error: this installer needs to be run by bash"
+    echo "Unable to restart with bash shell"
+    exit 1
+fi
+
 ###
 #
 # Static variables:
 #
 ###
 
-VERSION=0.1.2
-RELEASE_DATE=2012-03-15
+VERSION=0.1.3
+RELEASE_DATE=2012-03-21
 
 # Get OS type. Expect: linux or darwin or something else
 OS=$OSTYPE
@@ -34,12 +44,12 @@ VIRTUALBOX_DMG_FILE=${VIRTUALBOX_DMG_URL/*\//}
 
 ###
 #
-# Define all the steps to perform in separate functions, then call them
-# at the bottom of the script.
+# Define all the steps to perform in separate functions, then call them at the
+# bottom of the script.
 #
 ###
 
-function welcome() {
+welcome() {
     cat <<EOS
 
 *** This is stackato-vbox-installer - version $VERSION - $RELEASE_DATE
@@ -72,12 +82,7 @@ EOS
     prompt
 }
 
-function verify_os() {
-    if [ -z $BASH_VERSION ]; then
-        echo "Error: this installer needs to be run by bash"
-        exit 1
-    fi
-
+verify_os() {
     x=`type which`; catch
     if [ $OS != 'linux' ] && [ $OS != 'darwin' ]; then
         die "Error: this installer currently only runs on Debian Linux or OS X"
@@ -90,7 +95,7 @@ function verify_os() {
     fi
 }
 
-function verify_system() {
+verify_system() {
     need_cmd 'bash'
     need_cmd 'cat'
     need_cmd 'curl'
@@ -134,7 +139,7 @@ EOS
     fi
 }
 
-function check_for_other_hypervisors() {
+check_for_other_hypervisors() {
     if [ $OS == "darwin" ]; then
         INSTALLED=`ls -l /Applications/ | grep -i vmware | wc -l`
         RUNNING=`ps -eaf | grep -i vmware | grep app | wc -l`
@@ -166,7 +171,7 @@ EOS
     fi
 }
 
-function install_vbox() {
+install_vbox() {
     VBOXMANAGE=`which VBoxManage`
     if [ -z $VBOXMANAGE ]; then
         sudo -k; catch
@@ -194,7 +199,7 @@ function install_vbox() {
     fi
 }
 
-function download_stackato() {
+download_stackato() {
     if [ -f $STACKATO_LICENSE_FILE ]; then
         rm $STACKATO_LICENSE_FILE
     fi
@@ -206,7 +211,7 @@ function download_stackato() {
     fi
 }
 
-function unzip_stackato() {
+unzip_stackato() {
     if [ ! -f $STACKATO_OVF_FILE ]; then
         echo
         echo "*** Unzipping Stackato zip file"
@@ -215,7 +220,7 @@ function unzip_stackato() {
     fi
 }
 
-function import_stackato_vm() {
+import_stackato_vm() {
     echo
     echo "*** Import Stackato VM file into VirtualBox"
     echo "$VBOXMANAGE import $STACKATO_OVF_FILE"
@@ -228,7 +233,7 @@ function import_stackato_vm() {
     catch
 }
 
-function configure_stackato_vm() {
+configure_stackato_vm() {
     echo
     echo "*** Configure the Stackato VM"
 
@@ -242,7 +247,7 @@ function configure_stackato_vm() {
     $VBOXMANAGE modifyvm $VM_NAME --memory $MEM_REQUIRED_MB; catch
 }
 
-function start_stackato_vm() {
+start_stackato_vm() {
     echo
     echo "*** Start the Stackato VM"
     echo "$VBOXMANAGE startvm $VM_NAME"
@@ -250,7 +255,7 @@ function start_stackato_vm() {
     $VBOXMANAGE startvm $VM_NAME; # catch
 }
 
-function success() {
+success() {
     cat <<EOS
 
 Everything seems to have worked. You should now see a VirtualBox VM booting.
@@ -285,24 +290,24 @@ EOS
 #
 ###
 
-function die {
+die() {
     echo $1
     exit 1
 }
 
-function catch() {
+catch() {
     if [ $? -ne 0 ]; then
         die "Error: command failed"
     fi
 }
 
-function need_cmd() {
+need_cmd() {
     CMD=$1
     bin=`which $CMD`
     if [ -z $bin ]; then die "Error: '$CMD' command required"; fi
 }
 
-function prompt() {
+prompt() {
     # Open a file descriptor to terminal
     exec 5<> /dev/tty
     echo -n "Press <CTL>-c to exit or press <ENTER> to continue..."
@@ -312,7 +317,7 @@ function prompt() {
 }
 
 # Check free mem on host and guess a number to use between 1-2GB
-function get_mem_size() {
+get_mem_size() {
     case $OS in
         linux)
             MEM_FREE_MB=`free -m | perl -0e '($t=<>)=~s/.*?buffers\/cache:\s+\S+\s+(\S+).*/$1/s;print$1'`
