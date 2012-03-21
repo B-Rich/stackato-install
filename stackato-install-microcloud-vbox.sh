@@ -117,7 +117,7 @@ verify_system() {
     fi
 
     # Extract the active network device name from ifconfig
-    NET_DEVICE=`ifconfig | perl -e '$t=do{local$/;<>};@m=split/^(\S+)(?::|\s\s+)/m,$t;shift(@m);for($i=0;$i<@m;$i+=2){next if$m[$i]=~/^(lo|ppp)/;next unless$m[$i+1]=~/inet (addr:)?\d/;print$m[$i];last}'`
+    NET_DEVICE=`ifconfig | perl -e '$t=do{local$/;<>};@m=split/^(\S+)(?::|\s\s+)/m,$t;shift(@m);%m=@m;for$k(sort keys%m){next if$k=~/^(lo|ppp|vmnet)/;next unless$m{$k}=~/inet (addr:)?\d/;print$k;last}'`
     if [ -z $NET_DEVICE ]; then
         die "Error: No network device seems to be active."
     fi
