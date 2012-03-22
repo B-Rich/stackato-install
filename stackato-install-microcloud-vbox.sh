@@ -179,8 +179,16 @@ install_vbox() {
         case $OS in
             linux)
                 echo "*** Installing VirtualBox from Debian package"
-                echo 'sudo apt-get install virtualbox'
-                sudo apt-get install -y virtualbox; catch
+                if [ `apt-cache search virtualbox | grep -i '^virtualbox ' | wc -l` == '1' ]; then
+                    PKG=virtualbox
+                elif [ `apt-cache search virtualbox-ose | grep -i '^virtualbox-ose ' | wc -l` == '1' ]; then
+                    PKG=virtualbox-ose
+                else
+                    echo "Can't find a virtualbox debian package."
+                    die "Try installing VirtualBox yourself and then run this again."
+                fi
+                echo "sudo apt-get install -y $PKG"
+                sudo apt-get install -y $PKG; catch
                 ;;
             darwin)
                 echo "*** Installing VirtualBox from virtualbox.org"
@@ -188,7 +196,7 @@ install_vbox() {
                 curl -L $VIRTUALBOX_DMG_URL > $VIRTUALBOX_DMG_FILE; catch
                 echo "hdiutil mount $VIRTUALBOX_DMG_FILE"
                 hdiutil mount $VIRTUALBOX_DMG_FILE; catch
-                echo 'sudo installer -pkg /Volumes/VirtualBox/VirtualBox.mpkg -target /Applications/'
+                echo 'sudo installer -pkg /Volumes/VirtualBox/VirtualBox.mpkg -target /'
                 sudo installer -pkg /Volumes/VirtualBox/VirtualBox.mpkg -target /; catch
                 echo "hdiutil unmount /Volumes/VirtualBox"
                 hdiutil unmount /Volumes/VirtualBox; catch
