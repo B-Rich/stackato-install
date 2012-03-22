@@ -23,8 +23,8 @@ fi
 #
 ###
 
-VERSION=0.1.3
-RELEASE_DATE=2012-03-21
+VERSION=0.1.4
+RELEASE_DATE=2012-03-22
 
 # Get OS type. Expect: linux or darwin or something else
 OS=$OSTYPE
